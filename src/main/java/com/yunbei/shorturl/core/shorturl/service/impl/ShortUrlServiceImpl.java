@@ -49,7 +49,8 @@ public class ShortUrlServiceImpl implements IShortUrlService {
         ShortUrl shortUrl = findByAccount(account, accountSource, url);
 
         if (shortUrl == null) {
-
+            // TODO
+            shortUrl = new ShortUrl(account, url);
         }
 
         return null;
@@ -71,6 +72,11 @@ public class ShortUrlServiceImpl implements IShortUrlService {
         }
 
         return shortUrl;
+    }
+
+    public long addShortUrl(ShortUrl shortUrl) {
+
+        return 0;
     }
 
     @Override

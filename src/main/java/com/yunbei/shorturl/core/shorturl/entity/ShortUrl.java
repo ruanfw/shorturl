@@ -25,9 +25,8 @@ public class ShortUrl extends BasicEntity {
     public ShortUrl() {
     }
 
-    public ShortUrl(String account, String shortUrlIndex, String url) {
+    public ShortUrl(String account, String url) {
         this.account = account;
-        this.shortUrlIndex = shortUrlIndex;
         this.url = url;
     }
 
