@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunbei.shorturl.core.shorturl.dao.IShortUrlDao">
+
+	<sql id="table">short_url</sql>
+	
+    <sql id="fileds">
+      id
+      ,account
+      ,accountSource
+      ,shortUrlIndex
+      ,url
+      ,addTs
+      ,updateTs
+    </sql>
+
+    <resultMap type="ShortUrl" id="resultShortUrlMap">
+      <id column="id" property="id"/>
+      <result column="account" property="account"/>
+      <result column="accountSource" property="accountSource"/>
+      <result column="shortUrlIndex" property="shortUrlIndex"/>   
+      <result column="url" property="url"/>   
+      <result column="addTs" property="addTs"/>   
+      <result column="updateTs" property="updateTs"/>  
+    </resultMap>
+
+   <insert id="insert" parameterType="ShortUrl" useGeneratedKeys="true"	keyProperty="id">
+        insert into
+        <include refid="table"/>
+        (
+         <include refid="fileds"/>
+        )
+        values
+        (null,#{account},#{accountSource},#{shortUrlIndex},#{url},null,now())
+	</insert>    
+  
+    
+    <select id="selectByAccount" parameterType="map" resultMap="resultShortUrlMap">
+      select
+      <include refid="fileds"/>
+      from
+      <include refid="table"/>
+      <where>
+        <if test="account!=null">account=#{account}</if>
+        <if test="accountSource !=null">accountSource=#{accountSource}</if>
+        <if test="url!=null">and url=#{url}</if>
+        <if test="shortUrlIndex!=null">and shortUrlIndex=#{shortUrlIndex}</if>
+      </where>
+      limit 1;
+    </select>
+    
+    <!-- 更新 -->
+	<update id="update" parameterType="ShortUrl">
+		UPDATE
+		<include refid="table" />
+		<set>
+			<if test="shortUrlIndex != null">shortUrlIndex=#{shortUrlIndex},</if>
+		</set>
+		WHERE id=#{id}
+		;
+	</update>
+	
+</mapper>

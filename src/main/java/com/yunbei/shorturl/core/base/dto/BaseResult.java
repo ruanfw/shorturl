@@ -1,8 +1,10 @@
 package com.yunbei.shorturl.core.base.dto;
 
+import java.io.Serializable;
+
 import org.apache.commons.lang3.StringUtils;
 
-public class BaseResult {
+public class BaseResult implements Serializable {
 
     private boolean success = true;
 

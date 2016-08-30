@@ -33,7 +33,7 @@
     </bean>
 
     <!--4:扫描web相关的bean-->
-    <context:component-scan base-package="com.yingjun.ssm.web"/>
+    <context:component-scan base-package="com.yunbei.shorturl.web"/>
 
 	<!-- 全局异常捕捉 -->
 	<bean class="com.yunbei.shorturl.core.base.exception.GlobalExceptionResolver" />

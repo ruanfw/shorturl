@@ -11,26 +11,27 @@ public class BasicGenericEntity implements Serializable {
     /**
      * 插入时的时间戳
      */
-    public Date addTs;
+    public Date gmtCreated;
 
     /**
      * 更新时的时间戳
      */
-    public Date updateTs;
+    public Date gmtModified;
 
-    public Date getAddTs() {
-        return addTs;
+    public Date getGmtCreated() {
+        return gmtCreated;
     }
 
-    public void setAddTs(Date addTs) {
-        this.addTs = addTs;
+    public void setGmtCreated(Date gmtCreated) {
+        this.gmtCreated = gmtCreated;
     }
 
-    public Date getUpdateTs() {
-        return updateTs;
+    public Date getGmtModified() {
+        return gmtModified;
     }
 
-    public void setUpdateTs(Date updateTs) {
-        this.updateTs = updateTs;
+    public void setGmtModified(Date gmtModified) {
+        this.gmtModified = gmtModified;
     }
+
 }

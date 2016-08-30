@@ -5,4 +5,4 @@
  * @author Administrator
  *
  */
-package com.yunbei.shorturl.core.utils;
+package com.yunbei.shorturl.core.base.utils;
