@@ -13,28 +13,30 @@ package com.yunbei.shorturl.core.base.enums;
  * 
  */
 public enum ReturnCodeMsg {
-    /**
-     * 
-     */
-    SUCCESS(200, "操作正确"),
+	/**
+	 * 
+	 */
+	SUCCESS(200, "操作正确"),
 
-    URL_IS_NULL(300, "网址不能为空")
+	URL_IS_NULL(300, "网址不能为空"),
 
-    ;
-    ReturnCodeMsg(int code, String msg) {
-        this.code = code;
-        this.msg = msg;
-    }
+	CONVERT_SHORT_URL_ERROR(301, "转换短链接失败")
 
-    private int code;
-    private String msg;
+	;
+	ReturnCodeMsg(int code, String msg) {
+		this.code = code;
+		this.msg = msg;
+	}
 
-    public int getCode() {
-        return code;
-    }
+	private int code;
+	private String msg;
 
-    public String getMsg() {
-        return msg;
-    }
+	public int getCode() {
+		return code;
+	}
+
+	public String getMsg() {
+		return msg;
+	}
 
 }

@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.connection.RedisConnection;
@@ -11,6 +13,7 @@ import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
+import com.yunbei.shorturl.core.base.cache.parse.HashKeyParser;
 import com.yunbei.shorturl.core.base.utils.ProtoStuffSerializerUtil;
 
 /**
@@ -22,131 +25,140 @@ import com.yunbei.shorturl.core.base.utils.ProtoStuffSerializerUtil;
 @Component
 public class RedisCache {
 
-    // public final static String CAHCENAME = "cache";// 缓存名
-    public final static int CAHCETIME = 60;// 默认缓存时间
+	private static final Logger LOG = LoggerFactory.getLogger(RedisCache.class);
 
-    @Autowired
-    private RedisTemplate<String, String> redisTemplate;
+	// public final static String CAHCENAME = "cache";// 缓存名
+	public final static int CAHCETIME = 60;// 默认缓存时间
 
-    public <T> boolean setNx(String key, T obj) {
-        final byte[] bkey = key.getBytes();
-        final byte[] bvalue = ProtoStuffSerializerUtil.serialize(obj);
-        boolean result = redisTemplate.execute(new RedisCallback<Boolean>() {
-            @Override
-            public Boolean doInRedis(RedisConnection connection) throws DataAccessException {
-                return connection.setNX(bkey, bvalue);
-            }
-        });
-        return result;
-    }
+	@Autowired
+	private RedisTemplate<String, String> redisTemplate;
 
-    public <T> void setEx(String key, T obj, final long expireTime) {
-        final byte[] bkey = key.getBytes();
-        final byte[] bvalue = ProtoStuffSerializerUtil.serialize(obj);
-        redisTemplate.execute(new RedisCallback<Boolean>() {
-            @Override
-            public Boolean doInRedis(RedisConnection connection) throws DataAccessException {
-                connection.setEx(bkey, expireTime, bvalue);
-                return true;
-            }
-        });
-    }
+	public <T> boolean setNx(String key, T obj) {
+		final byte[] bkey = key.getBytes();
+		final byte[] bvalue = ProtoStuffSerializerUtil.serialize(obj);
+		boolean result = redisTemplate.execute(new RedisCallback<Boolean>() {
+			@Override
+			public Boolean doInRedis(RedisConnection connection) throws DataAccessException {
+				return connection.setNX(bkey, bvalue);
+			}
+		});
+		return result;
+	}
 
-    public <T> boolean setNxList(String key, List<T> objList) {
-        final byte[] bkey = key.getBytes();
-        final byte[] bvalue = ProtoStuffSerializerUtil.serializeList(objList);
-        boolean result = redisTemplate.execute(new RedisCallback<Boolean>() {
-            @Override
-            public Boolean doInRedis(RedisConnection connection) throws DataAccessException {
-                return connection.setNX(bkey, bvalue);
-            }
-        });
-        return result;
-    }
+	public <T> void setEx(String key, T obj, final long expireTime) {
+		final byte[] bkey = key.getBytes();
+		final byte[] bvalue = ProtoStuffSerializerUtil.serialize(obj);
+		redisTemplate.execute(new RedisCallback<Boolean>() {
+			@Override
+			public Boolean doInRedis(RedisConnection connection) throws DataAccessException {
+				connection.setEx(bkey, expireTime, bvalue);
+				return true;
+			}
+		});
+	}
 
-    public <T> boolean setExList(String key, List<T> objList, final long expireTime) {
-        final byte[] bkey = key.getBytes();
-        final byte[] bvalue = ProtoStuffSerializerUtil.serializeList(objList);
-        boolean result = redisTemplate.execute(new RedisCallback<Boolean>() {
-            @Override
-            public Boolean doInRedis(RedisConnection connection) throws DataAccessException {
-                connection.setEx(bkey, expireTime, bvalue);
-                return true;
-            }
-        });
-        return result;
-    }
+	public <T> boolean setNxList(String key, List<T> objList) {
+		final byte[] bkey = key.getBytes();
+		final byte[] bvalue = ProtoStuffSerializerUtil.serializeList(objList);
 
-    public <T> T get(final String key, Class<T> targetClass) {
-        byte[] result = redisTemplate.execute(new RedisCallback<byte[]>() {
-            @Override
-            public byte[] doInRedis(RedisConnection connection) throws DataAccessException {
-                return connection.get(key.getBytes());
-            }
-        });
-        if (result == null) {
-            return null;
-        }
-        return ProtoStuffSerializerUtil.deserialize(result, targetClass);
-    }
+		boolean result = redisTemplate.execute(new RedisCallback<Boolean>() {
+			@Override
+			public Boolean doInRedis(RedisConnection connection) throws DataAccessException {
+				return connection.setNX(bkey, bvalue);
+			}
+		});
+		return result;
+	}
 
-    public <T> List<T> getList(final String key, Class<T> targetClass) {
-        byte[] result = redisTemplate.execute(new RedisCallback<byte[]>() {
-            @Override
-            public byte[] doInRedis(RedisConnection connection) throws DataAccessException {
-                return connection.get(key.getBytes());
-            }
-        });
-        if (result == null) {
-            return null;
-        }
-        return ProtoStuffSerializerUtil.deserializeList(result, targetClass);
-    }
+	public <T> boolean setExList(String key, List<T> objList, final long expireTime) {
+		final byte[] bkey = key.getBytes();
+		final byte[] bvalue = ProtoStuffSerializerUtil.serializeList(objList);
+		boolean result = redisTemplate.execute(new RedisCallback<Boolean>() {
+			@Override
+			public Boolean doInRedis(RedisConnection connection) throws DataAccessException {
+				connection.setEx(bkey, expireTime, bvalue);
+				return true;
+			}
+		});
+		return result;
+	}
 
-    /**
-     * 精确删除key
-     *
-     * @param key
-     */
-    public void del(String key) {
-        redisTemplate.delete(key);
-    }
+	public <T> T get(final String key, Class<T> targetClass) {
+		byte[] result = redisTemplate.execute(new RedisCallback<byte[]>() {
+			@Override
+			public byte[] doInRedis(RedisConnection connection) throws DataAccessException {
+				return connection.get(key.getBytes());
+			}
+		});
+		if (result == null) {
+			return null;
+		}
+		return ProtoStuffSerializerUtil.deserialize(result, targetClass);
+	}
 
-    /**
-     * 模糊删除key
-     *
-     * @param pattern
-     */
-    public void delWithPattern(String pattern) {
-        Set<String> keys = redisTemplate.keys(pattern);
-        redisTemplate.delete(keys);
-    }
+	public <T> List<T> getList(final String key, Class<T> targetClass) {
+		byte[] result = redisTemplate.execute(new RedisCallback<byte[]>() {
+			@Override
+			public byte[] doInRedis(RedisConnection connection) throws DataAccessException {
+				return connection.get(key.getBytes());
+			}
+		});
+		if (result == null) {
+			return null;
+		}
+		return ProtoStuffSerializerUtil.deserializeList(result, targetClass);
+	}
 
-    /**
-     * 检查连接
-     * 
-     * @return
-     */
-    public String ping() {
-        return redisTemplate.execute(new RedisCallback<String>() {
-            @Override
-            public String doInRedis(RedisConnection connection) throws DataAccessException {
-                return connection.ping();
-            }
-        });
-    }
+	/**
+	 * 精确删除key
+	 *
+	 * @param key
+	 */
+	public void del(String key) {
+		redisTemplate.delete(key);
+	}
 
-    public String generateKey(String... params) {
+	/**
+	 * 模糊删除key
+	 *
+	 * @param pattern
+	 */
+	public void delWithPattern(String pattern) {
+		Set<String> keys = redisTemplate.keys(pattern);
+		redisTemplate.delete(keys);
+	}
 
-        if (params == null || params.length <= 0) {
-            return StringUtils.EMPTY;
-        }
+	/**
+	 * 检查连接
+	 * 
+	 * @return
+	 */
+	public String ping() {
+		return redisTemplate.execute(new RedisCallback<String>() {
+			@Override
+			public String doInRedis(RedisConnection connection) throws DataAccessException {
+				return connection.ping();
+			}
+		});
+	}
 
-        StringBuilder sb = new StringBuilder();
-        for (String param : params) {
-            sb.append(param).append(":");
-        }
-        sb.deleteCharAt(sb.length() - 1);
-        return sb.toString();
-    }
+	public <T> String genKey(Class<T> clazz, String... params) {
+
+		try {
+			return HashKeyParser.genKey(clazz, params);
+		} catch (Exception e) {
+			LOG.warn(e.getMessage(), e);
+		}
+		return StringUtils.EMPTY;
+	}
+
+	public String genKey(Object obj) {
+
+		try {
+			return HashKeyParser.genKey(obj);
+		} catch (Exception e) {
+			LOG.warn(e.getMessage(), e);
+		}
+		return StringUtils.EMPTY;
+	}
 }
