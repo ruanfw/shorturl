@@ -25,140 +25,140 @@ import com.yunbei.shorturl.core.base.utils.ProtoStuffSerializerUtil;
 @Component
 public class RedisCache {
 
-	private static final Logger LOG = LoggerFactory.getLogger(RedisCache.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RedisCache.class);
 
-	// public final static String CAHCENAME = "cache";// 缓存名
-	public final static int CAHCETIME = 60;// 默认缓存时间
+    public static final int CAHCETIME = 60;// 默认缓存时间
 
-	@Autowired
-	private RedisTemplate<String, String> redisTemplate;
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
 
-	public <T> boolean setNx(String key, T obj) {
-		final byte[] bkey = key.getBytes();
-		final byte[] bvalue = ProtoStuffSerializerUtil.serialize(obj);
-		boolean result = redisTemplate.execute(new RedisCallback<Boolean>() {
-			@Override
-			public Boolean doInRedis(RedisConnection connection) throws DataAccessException {
-				return connection.setNX(bkey, bvalue);
-			}
-		});
-		return result;
-	}
+    public <T> boolean setNx(String key, T obj) {
+        final byte[] bkey = key.getBytes();
+        final byte[] bvalue = ProtoStuffSerializerUtil.serialize(obj);
 
-	public <T> void setEx(String key, T obj, final long expireTime) {
-		final byte[] bkey = key.getBytes();
-		final byte[] bvalue = ProtoStuffSerializerUtil.serialize(obj);
-		redisTemplate.execute(new RedisCallback<Boolean>() {
-			@Override
-			public Boolean doInRedis(RedisConnection connection) throws DataAccessException {
-				connection.setEx(bkey, expireTime, bvalue);
-				return true;
-			}
-		});
-	}
+        boolean result = redisTemplate.execute(new RedisCallback<Boolean>() {
+            @Override
+            public Boolean doInRedis(RedisConnection connection) throws DataAccessException {
+                return connection.setNX(bkey, bvalue);
+            }
+        });
+        return result;
+    }
 
-	public <T> boolean setNxList(String key, List<T> objList) {
-		final byte[] bkey = key.getBytes();
-		final byte[] bvalue = ProtoStuffSerializerUtil.serializeList(objList);
+    public <T> void setEx(String key, T obj, final long expireTime) {
+        final byte[] bkey = key.getBytes();
+        final byte[] bvalue = ProtoStuffSerializerUtil.serialize(obj);
+        redisTemplate.execute(new RedisCallback<Boolean>() {
+            @Override
+            public Boolean doInRedis(RedisConnection connection) throws DataAccessException {
+                connection.setEx(bkey, expireTime, bvalue);
+                return true;
+            }
+        });
+    }
 
-		boolean result = redisTemplate.execute(new RedisCallback<Boolean>() {
-			@Override
-			public Boolean doInRedis(RedisConnection connection) throws DataAccessException {
-				return connection.setNX(bkey, bvalue);
-			}
-		});
-		return result;
-	}
+    public <T> boolean setNxList(String key, List<T> objList) {
+        final byte[] bkey = key.getBytes();
+        final byte[] bvalue = ProtoStuffSerializerUtil.serializeList(objList);
 
-	public <T> boolean setExList(String key, List<T> objList, final long expireTime) {
-		final byte[] bkey = key.getBytes();
-		final byte[] bvalue = ProtoStuffSerializerUtil.serializeList(objList);
-		boolean result = redisTemplate.execute(new RedisCallback<Boolean>() {
-			@Override
-			public Boolean doInRedis(RedisConnection connection) throws DataAccessException {
-				connection.setEx(bkey, expireTime, bvalue);
-				return true;
-			}
-		});
-		return result;
-	}
+        boolean result = redisTemplate.execute(new RedisCallback<Boolean>() {
+            @Override
+            public Boolean doInRedis(RedisConnection connection) throws DataAccessException {
+                return connection.setNX(bkey, bvalue);
+            }
+        });
+        return result;
+    }
 
-	public <T> T get(final String key, Class<T> targetClass) {
-		byte[] result = redisTemplate.execute(new RedisCallback<byte[]>() {
-			@Override
-			public byte[] doInRedis(RedisConnection connection) throws DataAccessException {
-				return connection.get(key.getBytes());
-			}
-		});
-		if (result == null) {
-			return null;
-		}
-		return ProtoStuffSerializerUtil.deserialize(result, targetClass);
-	}
+    public <T> boolean setExList(String key, List<T> objList, final long expireTime) {
+        final byte[] bkey = key.getBytes();
+        final byte[] bvalue = ProtoStuffSerializerUtil.serializeList(objList);
+        boolean result = redisTemplate.execute(new RedisCallback<Boolean>() {
+            @Override
+            public Boolean doInRedis(RedisConnection connection) throws DataAccessException {
+                connection.setEx(bkey, expireTime, bvalue);
+                return true;
+            }
+        });
+        return result;
+    }
 
-	public <T> List<T> getList(final String key, Class<T> targetClass) {
-		byte[] result = redisTemplate.execute(new RedisCallback<byte[]>() {
-			@Override
-			public byte[] doInRedis(RedisConnection connection) throws DataAccessException {
-				return connection.get(key.getBytes());
-			}
-		});
-		if (result == null) {
-			return null;
-		}
-		return ProtoStuffSerializerUtil.deserializeList(result, targetClass);
-	}
+    public <T> T get(final String key, Class<T> targetClass) {
+        byte[] result = redisTemplate.execute(new RedisCallback<byte[]>() {
+            @Override
+            public byte[] doInRedis(RedisConnection connection) throws DataAccessException {
+                return connection.get(key.getBytes());
+            }
+        });
+        if (result == null) {
+            return null;
+        }
+        return ProtoStuffSerializerUtil.deserialize(result, targetClass);
+    }
 
-	/**
-	 * 精确删除key
-	 *
-	 * @param key
-	 */
-	public void del(String key) {
-		redisTemplate.delete(key);
-	}
+    public <T> List<T> getList(final String key, Class<T> targetClass) {
+        byte[] result = redisTemplate.execute(new RedisCallback<byte[]>() {
+            @Override
+            public byte[] doInRedis(RedisConnection connection) throws DataAccessException {
+                return connection.get(key.getBytes());
+            }
+        });
+        if (result == null) {
+            return null;
+        }
+        return ProtoStuffSerializerUtil.deserializeList(result, targetClass);
+    }
 
-	/**
-	 * 模糊删除key
-	 *
-	 * @param pattern
-	 */
-	public void delWithPattern(String pattern) {
-		Set<String> keys = redisTemplate.keys(pattern);
-		redisTemplate.delete(keys);
-	}
+    /**
+     * 精确删除key
+     *
+     * @param key
+     */
+    public void del(String key) {
+        redisTemplate.delete(key);
+    }
 
-	/**
-	 * 检查连接
-	 * 
-	 * @return
-	 */
-	public String ping() {
-		return redisTemplate.execute(new RedisCallback<String>() {
-			@Override
-			public String doInRedis(RedisConnection connection) throws DataAccessException {
-				return connection.ping();
-			}
-		});
-	}
+    /**
+     * 模糊删除key
+     *
+     * @param pattern
+     */
+    public void delWithPattern(String pattern) {
+        Set<String> keys = redisTemplate.keys(pattern);
+        redisTemplate.delete(keys);
+    }
 
-	public <T> String genKey(Class<T> clazz, String... params) {
+    /**
+     * 检查连接
+     * 
+     * @return
+     */
+    public String ping() {
+        return redisTemplate.execute(new RedisCallback<String>() {
+            @Override
+            public String doInRedis(RedisConnection connection) throws DataAccessException {
+                return connection.ping();
+            }
+        });
+    }
 
-		try {
-			return HashKeyParser.genKey(clazz, params);
-		} catch (Exception e) {
-			LOG.warn(e.getMessage(), e);
-		}
-		return StringUtils.EMPTY;
-	}
+    public <T> String genKey(Class<T> clazz, String... params) {
 
-	public String genKey(Object obj) {
+        try {
+            return HashKeyParser.genKey(clazz, params);
+        } catch (Exception e) {
+            LOG.warn(e.getMessage(), e);
+        }
+        return StringUtils.EMPTY;
+    }
 
-		try {
-			return HashKeyParser.genKey(obj);
-		} catch (Exception e) {
-			LOG.warn(e.getMessage(), e);
-		}
-		return StringUtils.EMPTY;
-	}
+    public String genKey(Object obj) {
+
+        try {
+            return HashKeyParser.genKey(obj);
+        } catch (Exception e) {
+            LOG.warn(e.getMessage(), e);
+        }
+        return StringUtils.EMPTY;
+    }
 }

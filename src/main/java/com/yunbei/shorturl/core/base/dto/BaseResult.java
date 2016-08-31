@@ -4,11 +4,13 @@ import java.io.Serializable;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.yunbei.shorturl.core.base.enums.ErrorCode;
+
 public class BaseResult implements Serializable {
 
     private boolean success = true;
 
-    private int code = 200;
+    private int code = ErrorCode.SUCCESS.getCode();
 
     private String message = StringUtils.EMPTY;
 
@@ -49,6 +51,10 @@ public class BaseResult implements Serializable {
         this.results = results;
     }
 
+    public BaseResult(Object results) {
+        this.results = results;
+    }
+
     public BaseResult(String message) {
         this.message = message;
     }
@@ -58,10 +64,22 @@ public class BaseResult implements Serializable {
         this.message = message;
     }
 
+    public BaseResult(boolean success, Object results) {
+        this.success = success;
+        this.results = results;
+    }
+
     public BaseResult(boolean success, int code, String message) {
         this.success = success;
         this.code = code;
         this.message = message;
+    }
+
+    public BaseResult(boolean success, int code, String message, Object results) {
+        this.success = success;
+        this.code = code;
+        this.message = message;
+        this.results = results;
     }
 
 }

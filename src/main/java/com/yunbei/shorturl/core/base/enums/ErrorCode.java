@@ -12,7 +12,7 @@ package com.yunbei.shorturl.core.base.enums;
  * @version V1.0
  * 
  */
-public enum ReturnCodeMsg {
+public enum ErrorCode {
 	/**
 	 * 
 	 */
@@ -23,7 +23,7 @@ public enum ReturnCodeMsg {
 	CONVERT_SHORT_URL_ERROR(301, "转换短链接失败")
 
 	;
-	ReturnCodeMsg(int code, String msg) {
+	ErrorCode(int code, String msg) {
 		this.code = code;
 		this.msg = msg;
 	}

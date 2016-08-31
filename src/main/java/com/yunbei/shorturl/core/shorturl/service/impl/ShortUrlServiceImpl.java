@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.yunbei.shorturl.core.base.cache.RedisCache;
 import com.yunbei.shorturl.core.base.dto.ProcessStatus;
-import com.yunbei.shorturl.core.base.enums.ReturnCodeMsg;
+import com.yunbei.shorturl.core.base.enums.ErrorCode;
 import com.yunbei.shorturl.core.base.utils.FeistelUtil;
 import com.yunbei.shorturl.core.shorturl.dao.IShortUrlDao;
 import com.yunbei.shorturl.core.shorturl.entity.ShortUrl;
@@ -22,99 +22,125 @@ import com.yunbei.shorturl.core.shorturl.service.IShortUrlService;
 @Service
 public class ShortUrlServiceImpl implements IShortUrlService {
 
-	private static final Logger LOG = LoggerFactory.getLogger(ShortUrlServiceImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ShortUrlServiceImpl.class);
 
-	@Autowired
-	private IShortUrlDao shortUrlDao;
+    @Autowired
+    private IShortUrlDao shortUrlDao;
 
-	@Autowired
-	private RedisCache redisCache;
+    @Autowired
+    private RedisCache redisCache;
 
-	@Override
-	public ProcessStatus convert2Short(String account, Integer accountSource, String url) {
+    @Override
+    public ProcessStatus convert2Short(String account, Integer accountSource, String url) {
 
-		ProcessStatus result = new ProcessStatus(false);
+        ProcessStatus result = new ProcessStatus(false);
 
-		if (StringUtils.isBlank(account)) {
-			account = "0";
-		}
-		if (accountSource == null) {
-			accountSource = AccountSource.UNKNOW.getSource();
-		}
+        if (StringUtils.isBlank(account)) {
+            account = "0";
+        }
+        if (accountSource == null) {
+            accountSource = AccountSource.UNKNOW.getSource();
+        }
 
-		if (StringUtils.isBlank(url)) {
-			result.setSuccess(false);
-			result.setMessage(ReturnCodeMsg.URL_IS_NULL.getMsg());
-			return result;
-		}
+        if (StringUtils.isBlank(url)) {
+            result.setSuccess(false);
+            result.setMessage(ErrorCode.URL_IS_NULL.getMsg());
+            return result;
+        }
 
-		ShortUrl shortUrl = findByAccount(account, accountSource, url);
+        ShortUrl shortUrl = findByAccount(account, accountSource, url);
 
-		if (shortUrl == null) {
-			shortUrl = new ShortUrl(account, accountSource, url);
-			long ret = addShortUrl(shortUrl);
-			if (ret > 0) {
-				result.setSuccess(true);
-				result.setResult(shortUrl);
-				return result;
-			}
-		} else {
-			result.setSuccess(true);
-			result.setResult(shortUrl);
-			return result;
-		}
+        if (shortUrl == null) {
+            shortUrl = new ShortUrl(account, accountSource, url);
+            long ret = addShortUrl(shortUrl);
+            if (ret > 0) {
+                result.setSuccess(true);
+                result.setResult(shortUrl);
+                return result;
+            }
+        } else {
+            result.setSuccess(true);
+            result.setResult(shortUrl);
+            return result;
+        }
 
-		result.setSuccess(false);
-		result.setMessage(ReturnCodeMsg.CONVERT_SHORT_URL_ERROR.getMsg());
-		return result;
-	}
+        result.setSuccess(false);
+        result.setMessage(ErrorCode.CONVERT_SHORT_URL_ERROR.getMsg());
+        return result;
+    }
 
-	@Override
-	public ShortUrl findByAccount(String account, Integer accountSource, String url) {
+    @Override
+    public ShortUrl findByAccount(String account, Integer accountSource, String url) {
 
-		// 查询缓存
-		String key = redisCache.genKey(ShortUrl.class, String.valueOf(accountSource), account, url);
-		ShortUrl shortUrl = redisCache.get(key, ShortUrl.class);
+        // 查询缓存
+        String key = redisCache.genKey(ShortUrl.class, String.valueOf(accountSource), account, url);
+        ShortUrl shortUrl = redisCache.get(key, ShortUrl.class);
 
-		if (shortUrl == null) {
-			Map<String, Object> map = new HashMap<String, Object>();
-			map.put("account", account);
-			map.put("accountSource", accountSource);
-			map.put("url", url);
-			shortUrl = shortUrlDao.selectByAccount(map);
-		}
+        if (shortUrl == null) {
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("account", account);
+            map.put("accountSource", accountSource);
+            map.put("url", url);
+            shortUrl = shortUrlDao.selectByAccount(map);
 
-		return shortUrl;
-	}
+            if (shortUrl != null) {
+                redisCache.setEx(key, shortUrl, 60 * 60);
+                redisCache.setEx(shortUrl.getShortUrlIndex(), shortUrl.getUrl(), 3 * 60 * 60);
+            }
+        }
 
-	@Transactional
-	@Override
-	public long addShortUrl(ShortUrl shortUrl) {
+        return shortUrl;
+    }
 
-		long result = 0;
-		if (shortUrl == null) {
-			return result;
-		}
+    @Transactional
+    @Override
+    public long addShortUrl(ShortUrl shortUrl) {
 
-		result = shortUrlDao.insert(shortUrl);
+        long result = 0;
+        if (shortUrl == null) {
+            return result;
+        }
 
-		if (result > 0) {
-			String shortUrlIndex = FeistelUtil.getIndex(shortUrl.getId());
-			shortUrl.setShortUrlIndex(shortUrlIndex);
-			result = shortUrlDao.update(shortUrl);
-			if (result > 0) {
-				String key = redisCache.genKey(shortUrl);
-				redisCache.setEx(key, shortUrl, 60);
-				return result;
-			}
-		}
-		return result;
-	}
+        result = shortUrlDao.insert(shortUrl);
 
-	@Override
-	public ProcessStatus convert2Long(String account, Integer accountSource, String shortUrl) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+        if (result > 0) {
+            String shortUrlIndex = FeistelUtil.getIndex(shortUrl.getId());
+            shortUrl.setShortUrlIndex(shortUrlIndex);
+            result = shortUrlDao.update(shortUrl);
+            if (result > 0) {
+                String key = redisCache.genKey(shortUrl);
+                redisCache.setEx(key, shortUrl, 60 * 60);
+                redisCache.setEx(shortUrl.getShortUrlIndex(), shortUrl.getUrl(), 3 * 60 * 60);
+                return result;
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public ProcessStatus convert2Long(String shortUrlIndex) {
+
+        ProcessStatus result = new ProcessStatus(false);
+
+        String url = redisCache.get(shortUrlIndex, String.class);
+        if (StringUtils.isBlank(url)) {
+            Map<String, Object> map = new HashMap<String, Object>();
+
+            map.put("shortUrlIndex", shortUrlIndex);
+            ShortUrl shortUrl = shortUrlDao.selectByAccount(map);
+            if (shortUrl != null) {
+                url = shortUrl.getUrl();
+                redisCache.setEx(shortUrl.getShortUrlIndex(), shortUrl.getUrl(), 3 * 60 * 60);
+            }
+        }
+        if (StringUtils.isNotBlank(url)) {
+            result.setSuccess(true);
+            result.setResult(url);
+            return result;
+        }
+
+        result.setMessage("转换失败");
+        return result;
+    }
 
 }

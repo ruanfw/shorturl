@@ -11,8 +11,8 @@
       ,accountSource
       ,shortUrlIndex
       ,url
-      ,addTs
-      ,updateTs
+      ,gmtCreated
+      ,gmtModified
     </sql>
 
     <resultMap type="ShortUrl" id="resultShortUrlMap">
@@ -21,8 +21,8 @@
       <result column="accountSource" property="accountSource"/>
       <result column="shortUrlIndex" property="shortUrlIndex"/>   
       <result column="url" property="url"/>   
-      <result column="addTs" property="addTs"/>   
-      <result column="updateTs" property="updateTs"/>  
+      <result column="gmtCreated" property="gmtCreated"/>   
+      <result column="gmtModified" property="gmtModified"/>  
     </resultMap>
 
    <insert id="insert" parameterType="ShortUrl" useGeneratedKeys="true"	keyProperty="id">
@@ -43,7 +43,7 @@
       <include refid="table"/>
       <where>
         <if test="account!=null">account=#{account}</if>
-        <if test="accountSource !=null">accountSource=#{accountSource}</if>
+        <if test="accountSource !=null">and accountSource=#{accountSource}</if>
         <if test="url!=null">and url=#{url}</if>
         <if test="shortUrlIndex!=null">and shortUrlIndex=#{shortUrlIndex}</if>
       </where>
