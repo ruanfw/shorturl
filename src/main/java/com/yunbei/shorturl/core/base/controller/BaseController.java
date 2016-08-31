@@ -4,8 +4,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.yunbei.shorturl.core.base.constant.SessionConfigs;
 import com.yunbei.shorturl.core.base.dto.BaseResult;
 import com.yunbei.shorturl.core.base.utils.NetworkUtil;
 
@@ -16,44 +18,49 @@ import com.yunbei.shorturl.core.base.utils.NetworkUtil;
  */
 
 public class BaseController {
-    @Autowired
-    protected HttpSession session;
 
-    @Autowired
-    protected HttpServletRequest request;
+	@Autowired
+	protected HttpSession session;
 
-    @Autowired
-    protected HttpServletResponse response;
+	@Autowired
+	protected HttpServletRequest request;
 
-    /**
-     * 获取ip地址
-     * 
-     * @return
-     */
-    protected String getRequestIP() {
-        // String ip = (String)
-        // session.getAttribute(SessionConfigs.SESSION.LOGIN_IP);
-        return NetworkUtil.getRemoteIPForNginx(request);
-    }
+	@Autowired
+	protected HttpServletResponse response;
 
-    protected BaseResult failedResult() {
-        BaseResult baseResult = new BaseResult(false);
-        return baseResult;
-    }
+	/**
+	 * 获取ip地址
+	 * 
+	 * @return
+	 */
+	protected String getRequestIP() {
+		String ip = (String) session.getAttribute(SessionConfigs.SESSION.LOGIN_IP);
 
-    protected BaseResult failedResult(int code, String msg) {
-        BaseResult baseResult = new BaseResult(false, code, msg, null);
-        return baseResult;
-    }
+		if (StringUtils.isBlank(ip)) {
+			ip = NetworkUtil.getRemoteIPForNginx(request);
+			session.setAttribute(SessionConfigs.SESSION.LOGIN_IP, ip);
+		}
+		return ip;
+	}
 
-    protected BaseResult successResult() {
-        BaseResult baseResult = new BaseResult(true);
-        return baseResult;
-    }
+	protected BaseResult failedResult() {
+		BaseResult baseResult = new BaseResult(false);
+		return baseResult;
+	}
 
-    protected BaseResult successResult(Object object) {
-        BaseResult baseResult = new BaseResult(true, object);
-        return baseResult;
-    }
+	protected BaseResult failedResult(int code, String msg) {
+		BaseResult baseResult = new BaseResult(false, code, msg, null);
+		return baseResult;
+	}
+
+	protected BaseResult successResult() {
+		BaseResult baseResult = new BaseResult(true);
+		return baseResult;
+	}
+
+	protected BaseResult successResult(Object object) {
+		BaseResult baseResult = new BaseResult(true, object);
+		return baseResult;
+	}
 
 }

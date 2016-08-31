@@ -18,6 +18,10 @@
     	2、提供一系列:数据绑定,数字和日期的format,@NumberFormat,@DataTimeFormat,xml,json默认读写支持
     -->
     <mvc:annotation-driven/>
+    
+    <!-- Handles HTTP GET requests for /resources/** by efficiently serving up static resources in the ${webappRoot}/resources directory -->
+	<mvc:resources mapping="/resources/**" location="/resources/" />
+    
 
     <!--2:静态资源默认servlet配置
     	1、加入对静态资源的处理:js,css,gif,png
@@ -26,12 +30,59 @@
     <mvc:default-servlet-handler/>
 
     <!--3:配置JSP　显示ViewResolver-->
+    <!-- 
     <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
         <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
-        <property name="prefix" value="/WEB-INF/jsp/"/>
-        <property name="suffix" value=".jsp"/>
+        <property name="prefix" value="/"/>
+        <property name="suffix" value=".html"/>
     </bean>
-
+     -->
+     
+     <bean id="velocityConfigurer" class="org.springframework.web.servlet.view.velocity.VelocityConfigurer">
+        <property name="resourceLoaderPath" value="/WEB-INF/htmls/" /><!-- 模板存放的路径 -->
+        <property name="configLocation" value="classpath:velocity.properties"/>
+    </bean>
+    
+     <bean id="ViewResolver" class="org.springframework.web.servlet.view.velocity.VelocityViewResolver">
+        <property name="cache" value="true" />
+        <property name="prefix" value="/" /><!-- 视图文件的前缀，即存放的路径 -->
+        <property name="suffix" value=".html" /><!-- 视图文件的后缀名 -->
+        <!--<property name="toolboxConfigLocation" value="/WEB-INF/tools.xml" /><!–toolbox配置文件路径–>-->
+        <property name="dateToolAttribute" value="date" /><!--日期函数名称-->
+        <property name="numberToolAttribute" value="number" /><!--数字函数名称-->
+        <property name="contentType" value="text/html;charset=UTF-8" />
+        <property name="exposeSpringMacroHelpers" value="true" /><!--是否使用spring对宏定义的支持-->
+        <property name="exposeRequestAttributes" value="true" /><!--是否开放request属性-->
+        <property name="requestContextAttribute" value="rc"/><!--request属性引用名称-->
+    </bean>
+    
+   	<!-- rest json related... start -->
+   	<!-- 
+	<bean id="mappingJacksonHttpMessageConverter"
+          class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+        <property name="supportedMediaTypes">
+            <list>
+                <value>application/json;charset=UTF-8</value>
+            </list>
+        </property>
+    </bean>
+    <bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+        <property name="messageConverters">
+            <list>
+                <ref bean="mappingJacksonHttpMessageConverter"/>
+            </list>
+        </property>
+    </bean>-->
+    <!-- rest json related... end -->
+    
+    <mvc:annotation-driven>
+    	<mvc:message-converters>
+            <bean class="org.springframework.http.converter.StringHttpMessageConverter"/>
+            <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"/>
+        </mvc:message-converters>
+	</mvc:annotation-driven>
+    
+     
     <!--4:扫描web相关的bean-->
     <context:component-scan base-package="com.yunbei.shorturl.web"/>
 
