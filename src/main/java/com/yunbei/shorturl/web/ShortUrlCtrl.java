@@ -41,6 +41,12 @@ public class ShortUrlCtrl extends BaseController {
         }
     }
 
+    /**
+     * 短链接访问
+     * 
+     * @param shortUrl
+     * @return
+     */
     @RequestMapping(value = "/{shortUrl}", method = RequestMethod.GET)
     public BaseResult getLongUrl(@PathVariable String shortUrl) {
 
