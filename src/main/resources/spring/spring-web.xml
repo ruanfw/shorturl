@@ -75,6 +75,7 @@
     </bean>-->
     <!-- rest json related... end -->
     
+    <!-- rest json -->
     <mvc:annotation-driven>
     	<mvc:message-converters>
             <bean class="org.springframework.http.converter.StringHttpMessageConverter"/>

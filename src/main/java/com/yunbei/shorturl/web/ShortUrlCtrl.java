@@ -1,5 +1,8 @@
 package com.yunbei.shorturl.web;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,60 +16,73 @@ import com.yunbei.shorturl.core.base.controller.BaseController;
 import com.yunbei.shorturl.core.base.dto.BaseResult;
 import com.yunbei.shorturl.core.base.dto.ProcessStatus;
 import com.yunbei.shorturl.core.base.enums.ErrorCode;
-import com.yunbei.shorturl.core.shorturl.entity.ShortUrl;
-import com.yunbei.shorturl.core.shorturl.service.IShortUrlService;
+import com.yunbei.shorturl.core.entity.ShortUrl;
+import com.yunbei.shorturl.core.event.Event;
+import com.yunbei.shorturl.core.event.EventProducer;
+import com.yunbei.shorturl.core.event.EventType;
+import com.yunbei.shorturl.core.service.IShortUrlService;
 
 @Controller
 @RestController
 public class ShortUrlCtrl extends BaseController {
 
-	private static final Logger LOG = LoggerFactory.getLogger(ShortUrlCtrl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ShortUrlCtrl.class);
 
-	@Autowired
-	private IShortUrlService shortUrlService;
+    @Autowired
+    private IShortUrlService shortUrlService;
 
-	/**
-	 * 获取短链接
-	 */
+    @Autowired
+    private EventProducer eventProducer;
 
-	@RequestMapping(value = "/short", method = RequestMethod.GET)
-	public BaseResult getShortUrl(String account, Integer accountSource, String url) {
+    /**
+     * 获取短链接
+     */
 
-		ProcessStatus processStatus = shortUrlService.convert2Short(account, accountSource, url);
+    @RequestMapping(value = "/short", method = RequestMethod.GET)
+    public BaseResult getShortUrl(String account, Integer accountSource, String url) {
 
-		if (processStatus.isSuccess()) {
+        ProcessStatus processStatus = shortUrlService.convert2Short(account, accountSource, url);
 
-			ShortUrl shortUrl = (ShortUrl) processStatus.getResult();
-			return successResult(shortUrl.getShortUrlIndex());
-		} else {
-			return failedResult(ErrorCode.CONVERT_SHORT_URL_ERROR.getCode(), processStatus.getMessage());
-		}
-	}
+        if (processStatus.isSuccess()) {
 
-	/**
-	 * 短链接访问
-	 * 
-	 * @param shortUrl
-	 * @return
-	 */
-	@RequestMapping(value = "/{shortUrl}", method = RequestMethod.GET)
-	public void getLongUrl(@PathVariable String shortUrl) {
+            ShortUrl shortUrl = (ShortUrl) processStatus.getResult();
+            return successResult(shortUrl.getShortUrlIndex());
+        } else {
+            return failedResult(ErrorCode.CONVERT_SHORT_URL_ERROR.getCode(), processStatus.getMessage());
+        }
+    }
 
-		ProcessStatus processStatus = shortUrlService.convert2Long(shortUrl);
-		LOG.warn("----------------------ip:{}", getRequestIP());
+    /**
+     * 短链接访问
+     * 
+     * @param shortUrl
+     * @return
+     */
+    @RequestMapping(value = "/{shortUrl}", method = RequestMethod.GET)
+    public void getLongUrl(@PathVariable String shortUrl) {
 
-		if (processStatus.isSuccess()) {
-			try {
-				String longUrl = (String) processStatus.getResult();
-				if (!longUrl.startsWith("http://") && !longUrl.startsWith("https://")) {
-					longUrl = "http://" + longUrl;
-				}
-				response.sendRedirect(longUrl);
-			} catch (Exception e) {
-				return;
-			}
-		} else {
-			return;
-		}
-	}
+        ProcessStatus processStatus = shortUrlService.convert2Long(shortUrl);
+        LOG.warn("----------------------ip:{}", getRequestIP());
+
+        if (processStatus.isSuccess()) {
+
+            String longUrl = (String) processStatus.getResult();
+            if (!longUrl.startsWith("http://") && !longUrl.startsWith("https://")) {
+                longUrl = "http://" + longUrl;
+            }
+            try {
+                Map<String, Object> params = new HashMap<String, Object>();
+                params.put("visitorTime", System.currentTimeMillis());
+                params.put("ip", getRequestIP());
+                params.put("shortUrlIndex", shortUrl);
+                params.put("realUrl", longUrl);
+                eventProducer.submit(new Event(EventType.VISITOR_LOG).setParams(params));
+                response.sendRedirect(longUrl);
+            } catch (Exception e) {
+                return;
+            }
+        } else {
+            return;
+        }
+    }
 }

@@ -12,7 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.yunbei.shorturl.core.base.cache.RedisCache;
+import com.yunbei.shorturl.core.cache.RedisCache;
 
 /**
  * Handles requests for the application home page.
