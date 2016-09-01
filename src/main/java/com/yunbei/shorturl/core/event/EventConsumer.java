@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,15 +13,17 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Service;
 
 import com.yunbei.shorturl.core.cache.RedisCache;
 import com.yunbei.shorturl.core.event.handler.IEventHandler;
 
+@Service
 public class EventConsumer implements InitializingBean, ApplicationContextAware {
 
     private static final Logger LOG = LoggerFactory.getLogger(EventConsumer.class);
 
-    private static final int THREAD_NUM = 4;
+    private static final int THREAD_NUM = 1;
 
     private static ApplicationContext applicationContext;
     private static Map<EventType, List<IEventHandler>> handlers = new HashMap<EventType, List<IEventHandler>>();
@@ -40,10 +40,33 @@ public class EventConsumer implements InitializingBean, ApplicationContextAware 
             return;
         }
 
-        ExecutorService executorService = Executors.newFixedThreadPool(THREAD_NUM);
+        test();
 
-        for (int i = 0; i < THREAD_NUM; i++) {
-            executorService.submit(new ConsumerThread());
+        // ExecutorService executorService =
+        // Executors.newFixedThreadPool(THREAD_NUM);
+        //
+        // for (int i = 0; i < THREAD_NUM; i++) {
+        // executorService.submit(new ConsumerThread());
+        // }
+
+    }
+
+    private void test() {
+
+        String key = redisCache.genKey(Event.class);
+        // brpop 如果redis里无事件，则会阻塞
+        // Event event = redisCache.brpopOnlyObj(0, key, Event.class);
+        Event event = redisCache.rpopObj(key, Event.class);
+
+        LOG.warn("event:{}", event.toString());
+
+        if (!handlers.containsKey(event.getEventType())) {
+            LOG.warn("handler not has this type:{} ", event.getEventType());
+            return;
+        }
+
+        for (IEventHandler eventHandler : handlers.get(event.getEventType())) {
+            eventHandler.deal(event);
         }
 
     }
@@ -58,6 +81,8 @@ public class EventConsumer implements InitializingBean, ApplicationContextAware 
                 String key = redisCache.genKey(Event.class);
                 // brpop 如果redis里无事件，则会阻塞
                 Event event = redisCache.brpopOnlyObj(0, key, Event.class);
+
+                LOG.warn("event:{}", event.toString());
 
                 if (!handlers.containsKey(event.getEventType())) {
                     LOG.warn("handler not has this type:{} ", event.getEventType());

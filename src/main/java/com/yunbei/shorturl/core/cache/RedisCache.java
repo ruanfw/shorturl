@@ -147,14 +147,13 @@ public class RedisCache {
         final byte[] bkey = key.getBytes();
 
         List<byte[]> bvalue = redisTemplate.execute(new RedisCallback<List<byte[]>>() {
-
             @Override
             public List<byte[]> doInRedis(RedisConnection connection) throws DataAccessException {
                 return connection.bRPop(timeout, bkey);
             }
         });
 
-        bvalue.get(1);
+        LOG.warn(String.valueOf(bvalue.size()));
 
         return ProtoStuffSerializerUtil.deserialize(bvalue.get(1), targetClass);
     }
