@@ -88,8 +88,6 @@ public class EventConsumer implements InitializingBean, ApplicationContextAware 
 				// brpop 如果redis里无事件，则会阻塞
 				Event event = redisCache.brpopOnlyObj(0, key, Event.class);
 
-				LOG.warn("event:{}", event.toString());
-
 				if (!handlers.containsKey(event.getEventType())) {
 					LOG.warn("handler not has this type:{} ", event.getEventType());
 					continue;

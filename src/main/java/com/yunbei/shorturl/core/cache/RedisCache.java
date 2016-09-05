@@ -27,7 +27,7 @@ public class RedisCache {
 
 	private static final Logger LOG = LoggerFactory.getLogger(RedisCache.class);
 
-	public static final int CAHCETIME = 60;// 默认缓存时间
+	public static final int CAHCETIME = 60;// 默认缓存时间60s
 
 	@Autowired
 	private RedisTemplate<String, String> redisTemplate;
@@ -128,12 +128,6 @@ public class RedisCache {
 		redisTemplate.delete(keys);
 	}
 
-	// public <T> long lpushObj(String key, T obj) {
-	// byte[] bvalue = ProtoStuffSerializerUtil.serialize(obj);
-	// String value = new String(bvalue);
-	// return redisTemplate.opsForList().leftPush(key, value);
-	// }
-
 	public <T> Long lpushObj(String key, T obj) {
 		final byte[] bvalue = ProtoStuffSerializerUtil.serialize(obj);
 		final byte[] bkey = key.getBytes();
@@ -144,7 +138,9 @@ public class RedisCache {
 				return connection.lPush(bkey, bvalue);
 			}
 		});
-
+		if (result == null) {
+			return null;
+		}
 		return result;
 	}
 
@@ -158,6 +154,9 @@ public class RedisCache {
 				return connection.rPop(bkey);
 			}
 		});
+		if (result == null) {
+			return null;
+		}
 		return ProtoStuffSerializerUtil.deserialize(result, targetClass);
 	}
 
@@ -165,14 +164,16 @@ public class RedisCache {
 
 		final byte[] bkey = key.getBytes();
 
-		List<byte[]> bvalue = redisTemplate.execute(new RedisCallback<List<byte[]>>() {
+		List<byte[]> result = redisTemplate.execute(new RedisCallback<List<byte[]>>() {
 			@Override
 			public List<byte[]> doInRedis(RedisConnection connection) throws DataAccessException {
 				return connection.bRPop(timeout, bkey);
 			}
 		});
-
-		return ProtoStuffSerializerUtil.deserialize(bvalue.get(1), targetClass);
+		if (result == null) {
+			return null;
+		}
+		return ProtoStuffSerializerUtil.deserialize(result.get(1), targetClass);
 	}
 
 	/**
