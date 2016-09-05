@@ -10,20 +10,28 @@ import com.yunbei.shorturl.core.cache.RedisCache;
 @Service
 public class EventProducer {
 
-    private static final Logger LOG = LoggerFactory.getLogger(EventProducer.class);
+	private static final Logger LOG = LoggerFactory.getLogger(EventProducer.class);
 
-    @Autowired
-    private RedisCache redisCache;
+	@Autowired
+	private RedisCache redisCache;
 
-    public boolean submit(Event event) {
+	public boolean submit(Event event) {
 
-        try {
-            String key = redisCache.genKey(event);
-            redisCache.lpushObj(key, event);
-        } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
-        }
-        return true;
-    }
+		try {
+			String key = redisCache.genKey(event);
+			Long result = redisCache.lpushObj(key, event);
+
+			if (result != null && result > 0) {
+				LOG.warn("submit success");
+				return true;
+			} else {
+				LOG.warn("submit faild");
+				return false;
+			}
+		} catch (Exception e) {
+			LOG.error(e.getMessage(), e);
+		}
+		return false;
+	}
 
 }

@@ -25,7 +25,7 @@ public class EventConsumer implements InitializingBean, ApplicationContextAware 
 
 	private static final Logger LOG = LoggerFactory.getLogger(EventConsumer.class);
 
-	private static final int THREAD_NUM = 1;
+	private static final int THREAD_NUM = 4;
 
 	private static ApplicationContext applicationContext;
 	private static Map<EventType, List<IEventHandler>> handlers = new HashMap<EventType, List<IEventHandler>>();
@@ -51,31 +51,6 @@ public class EventConsumer implements InitializingBean, ApplicationContextAware 
 		}
 
 	}
-
-	// private void test() {
-	//
-	// String key = redisCache.genKey(Event.class);
-	// // brpop 如果redis里无事件，则会阻塞
-	// // Event event = redisCache.brpopOnlyObj(0, key, Event.class);
-	// Event event = redisCache.rpopObj(key, Event.class);
-	//
-	// if (event == null) {
-	// LOG.warn("event is null");
-	// return;
-	// }
-	//
-	// LOG.warn("event:{}", event.toString());
-	//
-	// if (!handlers.containsKey(event.getEventType())) {
-	// LOG.warn("handler not has this type:{} ", event.getEventType());
-	// return;
-	// }
-	//
-	// for (IEventHandler eventHandler : handlers.get(event.getEventType())) {
-	// eventHandler.deal(event);
-	// }
-	//
-	// }
 
 	private class ConsumerThread implements Runnable {
 
