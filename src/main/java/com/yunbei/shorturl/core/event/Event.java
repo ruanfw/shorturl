@@ -7,66 +7,69 @@ import com.yunbei.shorturl.core.cache.annotation.Hash;
 @Hash(key = "shorturl:event")
 public class Event {
 
-    private EventType eventType;
+	private EventType eventType;
 
-    private int entityId;
+	private int entityId;
 
-    private int entityType;
+	private int entityType;
 
-    private Long gmtCreated;
+	private Long gmtCreated;
 
-    private Map<String, Object> params;
+	private Map<String, Object> params;
 
-    public Event(EventType eventType) {
-        this.eventType = eventType;
-        this.gmtCreated = System.currentTimeMillis();
-    }
+	public Event() {
+	}
 
-    public EventType getEventType() {
-        return eventType;
-    }
+	public Event(EventType eventType) {
+		this.eventType = eventType;
+		this.gmtCreated = System.currentTimeMillis();
+	}
 
-    public void setEventType(EventType eventType) {
-        this.eventType = eventType;
-    }
+	public EventType getEventType() {
+		return eventType;
+	}
 
-    public int getEntityId() {
-        return entityId;
-    }
+	public void setEventType(EventType eventType) {
+		this.eventType = eventType;
+	}
 
-    public void setEntityId(int entityId) {
-        this.entityId = entityId;
-    }
+	public int getEntityId() {
+		return entityId;
+	}
 
-    public int getEntityType() {
-        return entityType;
-    }
+	public void setEntityId(int entityId) {
+		this.entityId = entityId;
+	}
 
-    public void setEntityType(int entityType) {
-        this.entityType = entityType;
-    }
+	public int getEntityType() {
+		return entityType;
+	}
 
-    public Long getGmtCreated() {
-        return gmtCreated;
-    }
+	public void setEntityType(int entityType) {
+		this.entityType = entityType;
+	}
 
-    public void setGmtCreated(Long gmtCreated) {
-        this.gmtCreated = gmtCreated;
-    }
+	public Long getGmtCreated() {
+		return gmtCreated;
+	}
 
-    public Map<String, Object> getParams() {
-        return params;
-    }
+	public void setGmtCreated(Long gmtCreated) {
+		this.gmtCreated = gmtCreated;
+	}
 
-    public Event setParams(Map<String, Object> params) {
-        this.params = params;
-        return this;
-    }
+	public Map<String, Object> getParams() {
+		return params;
+	}
 
-    @Override
-    public String toString() {
-        return "Event [eventType=" + eventType + ", entityId=" + entityId + ", entityType=" + entityType
-                + ", gmtCreated=" + gmtCreated + ", params=" + params + "]";
-    }
+	public Event setParams(Map<String, Object> params) {
+		this.params = params;
+		return this;
+	}
+
+	@Override
+	public String toString() {
+		return "Event [eventType=" + eventType + ", entityId=" + entityId + ", entityType=" + entityType
+				+ ", gmtCreated=" + gmtCreated + ", params=" + params + "]";
+	}
 
 }
