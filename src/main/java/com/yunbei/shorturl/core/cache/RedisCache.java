@@ -149,11 +149,16 @@ public class RedisCache {
 	}
 
 	public <T> T rpopObj(final String key, Class<T> targetClass) {
-		String result = redisTemplate.opsForList().rightPop(key);
-		if (StringUtils.isEmpty(result)) {
-			return null;
-		}
-		return ProtoStuffSerializerUtil.deserialize(result.getBytes(), targetClass);
+
+		final byte[] bkey = key.getBytes();
+
+		byte[] result = redisTemplate.execute(new RedisCallback<byte[]>() {
+			@Override
+			public byte[] doInRedis(RedisConnection connection) throws DataAccessException {
+				return connection.rPop(bkey);
+			}
+		});
+		return ProtoStuffSerializerUtil.deserialize(result, targetClass);
 	}
 
 	public <T> T brpopOnlyObj(final int timeout, final String key, Class<T> targetClass) {
