@@ -1,4 +1,4 @@
-package com.yunbei.shorturl.core.base.exception;
+package com.yunbei.shorturl.core.exception;
 
 public class BizException extends RuntimeException {
 

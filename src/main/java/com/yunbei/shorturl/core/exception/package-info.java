@@ -5,4 +5,4 @@
  * @author Administrator
  *
  */
-package com.yunbei.shorturl.core.base.exception;
+package com.yunbei.shorturl.core.exception;

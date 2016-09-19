@@ -10,7 +10,7 @@
 	<!-- 缓存的层级-->
  	<context:component-scan base-package="com.yunbei.shorturl.core.cache" />
 	<!-- 引入redis配置 -->
- 	<context:property-placeholder location="classpath:redis.properties" ignore-unresolvable="true"/>
+ 	<context:property-placeholder location="classpath:${environment}.properties" ignore-unresolvable="true"/>
 
 	<!-- Redis 配置 -->
 	<bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
@@ -57,6 +57,7 @@
 		<property name="hostName" value="${redis.ip}" />
 		<property name="port" value="${redis.port}" />
 		<property name="password" value="${redis.pwd}" />
+		<property name="database" value="${redis.database}" />
 		<property name="poolConfig" ref="jedisPoolConfig" />
 	</bean> 
 

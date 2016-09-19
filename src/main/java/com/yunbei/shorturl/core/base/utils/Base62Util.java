@@ -53,4 +53,5 @@ public class Base62Util {
         }
         return index;
     }
+
 }

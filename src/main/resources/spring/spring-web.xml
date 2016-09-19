@@ -40,7 +40,7 @@
      
      <bean id="velocityConfigurer" class="org.springframework.web.servlet.view.velocity.VelocityConfigurer">
         <property name="resourceLoaderPath" value="/WEB-INF/htmls/" /><!-- 模板存放的路径 -->
-        <property name="configLocation" value="classpath:velocity.properties"/>
+        <property name="configLocation" value="classpath:${environment}.properties"/>
     </bean>
     
      <bean id="ViewResolver" class="org.springframework.web.servlet.view.velocity.VelocityViewResolver">
@@ -78,7 +78,8 @@
     <!-- rest json -->
     <mvc:annotation-driven>
     	<mvc:message-converters>
-            <bean class="org.springframework.http.converter.StringHttpMessageConverter"/>
+            <bean class="org.springframework.http.converter.StringHttpMessageConverter">
+            </bean>
             <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"/>
         </mvc:message-converters>
 	</mvc:annotation-driven>
@@ -88,6 +89,6 @@
     <context:component-scan base-package="com.yunbei.shorturl.web"/>
 
 	<!-- 全局异常捕捉 -->
-	<bean class="com.yunbei.shorturl.core.base.exception.GlobalExceptionResolver" />
+	<bean class="com.yunbei.shorturl.core.exception.GlobalExceptionResolver" />
 
 </beans>

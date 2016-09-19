@@ -100,6 +100,12 @@ public class BaseController {
 		return ip;
 	}
 
+	// @ExceptionHandler
+	// public String exp(Exception ex) {
+	// request.setAttribute("ex", ex);
+	// return "短网址不合要求！或 数据调用失败返回为空！";
+	// }
+
 	protected BaseResult failedResult() {
 		BaseResult baseResult = new BaseResult(false);
 		return baseResult;

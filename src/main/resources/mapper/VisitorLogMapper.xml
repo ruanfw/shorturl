@@ -33,6 +33,31 @@
         )
         values
         (null,now(),null,#{visitorTime},#{ip},#{shortUrlIndex},#{realUrl})
-	</insert>    
+	</insert>   
+	
+	 <select id="countByIndex" parameterType="map" resultType="long">
+      SELECT 
+      COUNT(*)
+      FROM
+      <include refid="table"/>
+      <where>
+        <if test="shortUrlIndex != null">shortUrlIndex=#{shortUrlIndex}</if>
+        <if test="beginTs != null">AND visitorTime >=#{beginTs}</if>
+        <if test="endTs != null">AND visitorTime &lt;=#{endTs}</if>
+      </where>
+    </select> 
+    
+    <select id="countVisitorsByIndex" parameterType="map" resultType="long">
+      SELECT 
+      COUNT(*)
+      FROM
+      <include refid="table"/>
+      <where>
+        <if test="shortUrlIndex != null">shortUrlIndex=#{shortUrlIndex}</if>
+        <if test="beginTs != null">AND visitorTime >=#{beginTs}</if>
+        <if test="endTs != null">AND visitorTime &lt;=#{endTs}</if>
+      </where>
+      group by ip
+    </select> 
 	
 </mapper>

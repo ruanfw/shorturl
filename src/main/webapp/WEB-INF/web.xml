@@ -17,6 +17,12 @@
 		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
 	</listener>
 	 -->
+	
+	<!-- 选择加载不同的配置文件，线上为dev，本地为test -->
+	<context-param>  
+	    <param-name>environment</param-name>  
+	    <param-value>dev</param-value>  
+	</context-param>
 
 	<!-- Processes application requests -->
 	<servlet>
@@ -34,6 +40,13 @@
 		<servlet-name>shorturl</servlet-name>
 		<url-pattern>/</url-pattern>
 	</servlet-mapping>
+	
+	<!-- 404 -->
+	<error-page>
+		<error-code>404</error-code>
+		<location>/WEB-INF/htmls/404.html</location>
+	</error-page>
+	
 	
 	<!-- druid -->
 	<servlet>

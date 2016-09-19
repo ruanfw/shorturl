@@ -23,90 +23,90 @@ import com.yunbei.shorturl.core.event.handler.IEventHandler;
 @Service
 public class EventConsumer implements InitializingBean, ApplicationContextAware {
 
-	private static final Logger LOG = LoggerFactory.getLogger(EventConsumer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(EventConsumer.class);
 
-	private static final int THREAD_NUM = 4;
+    private static final int THREAD_NUM = 4;
 
-	private static ApplicationContext applicationContext;
-	private static Map<EventType, List<IEventHandler>> handlers = new HashMap<EventType, List<IEventHandler>>();
+    private static ApplicationContext applicationContext;
+    private static Map<EventType, List<IEventHandler>> handlers = new HashMap<EventType, List<IEventHandler>>();
 
-	@Autowired
-	private RedisCache redisCache;
+    @Autowired
+    private RedisCache redisCache;
 
-	@Override
-	public void afterPropertiesSet() throws Exception {
+    @Override
+    public void afterPropertiesSet() throws Exception {
 
-		boolean result = initHandlers();
+        boolean result = initHandlers();
 
-		if (!result) {
-			return;
-		}
+        if (!result) {
+            return;
+        }
 
-		// test();
+        ExecutorService executorService = Executors.newFixedThreadPool(THREAD_NUM);
 
-		ExecutorService executorService = Executors.newFixedThreadPool(THREAD_NUM);
+        for (int i = 0; i < THREAD_NUM; i++) {
+            executorService.submit(new ConsumerThread());
+        }
 
-		for (int i = 0; i < THREAD_NUM; i++) {
-			executorService.submit(new ConsumerThread());
-		}
+    }
 
-	}
+    private class ConsumerThread implements Runnable {
 
-	private class ConsumerThread implements Runnable {
+        @Override
+        public void run() {
 
-		@Override
-		public void run() {
+            while (true) {
 
-			while (true) {
+                String key = redisCache.genKey(Event.class);
+                // brpop 如果redis里无事件，则会阻塞
+                Event event = redisCache.brpopOnlyObj(0, key, Event.class);
 
-				String key = redisCache.genKey(Event.class);
-				// brpop 如果redis里无事件，则会阻塞
-				Event event = redisCache.brpopOnlyObj(0, key, Event.class);
+                LOG.warn(event.toString());
 
-				if (!handlers.containsKey(event.getEventType())) {
-					LOG.warn("handler not has this type:{} ", event.getEventType());
-					continue;
-				}
+                if (!handlers.containsKey(event.getEventType())) {
+                    LOG.warn("handler not has this type:{} ", event.getEventType());
+                    continue;
+                }
 
-				for (IEventHandler eventHandler : handlers.get(event.getEventType())) {
-					eventHandler.deal(event);
-				}
+                for (IEventHandler eventHandler : handlers.get(event.getEventType())) {
+                    eventHandler.deal(event);
+                }
 
-			}
+            }
 
-		}
+        }
 
-	}
+    }
 
-	private boolean initHandlers() {
+    private boolean initHandlers() {
 
-		Map<String, IEventHandler> beans = applicationContext.getBeansOfType(IEventHandler.class);
+        Map<String, IEventHandler> beans = applicationContext.getBeansOfType(IEventHandler.class);
 
-		if (beans == null || beans.size() <= 0) {
-			LOG.warn("beans of IEventHandler is null");
-			return false;
-		}
+        if (beans == null || beans.size() <= 0) {
+            LOG.warn("beans of IEventHandler is null");
+            return false;
+        }
 
-		for (Entry<String, IEventHandler> bean : beans.entrySet()) {
+        for (Entry<String, IEventHandler> bean : beans.entrySet()) {
 
-			List<EventType> eventTypes = bean.getValue().getHandleEventTypes();
+            List<EventType> eventTypes = bean.getValue().getHandleEventTypes();
 
-			for (EventType eventType : eventTypes) {
+            for (EventType eventType : eventTypes) {
 
-				if (!handlers.containsKey(eventType)) {
-					handlers.put(eventType, new ArrayList<IEventHandler>());
-				}
+                if (!handlers.containsKey(eventType)) {
+                    handlers.put(eventType, new ArrayList<IEventHandler>());
+                }
 
-				handlers.get(eventType).add(bean.getValue());
-			}
-		}
+                handlers.get(eventType).add(bean.getValue());
+            }
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.applicationContext = applicationContext;
-	}
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
 
 }

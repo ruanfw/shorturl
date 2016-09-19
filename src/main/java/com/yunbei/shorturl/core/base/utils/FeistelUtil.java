@@ -26,7 +26,10 @@ public class FeistelUtil {
     }
 
     public static void main(String[] args) {
+        System.out.println(permuteId(1));
         System.out.println(Base62Util.encode(permuteId(1)));
+        System.out.println("49Ikv{18768184438}".hashCode());
+        System.out.println(Base62Util.encode(Math.abs(-283718765)));
     }
 
 }
